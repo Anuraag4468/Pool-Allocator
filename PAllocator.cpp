@@ -39,15 +39,12 @@ class PoolAllocator{
             reinterpret_cast<Node*>(current)->next = nullptr;
             m_head = static_cast<Node*>(m_memoryBlockStart);
 
-            std::cout << "Pre allocated " << totalBytes << " bytes at "
-            << m_memoryBlockStart  << " (" << m_chunksPerBlock << " chunks of " << m_chunkSize << " bytes). \n";
-        
         }
 
         ~PoolAllocator(){
             if( m_memoryBlockStart){
                 std::free(m_memoryBlockStart);
-                std::cout << "Memory pool released.\n";
+
             }
         }   
 
@@ -57,8 +54,6 @@ class PoolAllocator{
             Node* chunkToReturn = m_head;
 
             m_head = m_head->next;
-
-            std::cout << "Allocated chunk at: " << chunkToReturn << std::endl;
 
             return static_cast<void*> (chunkToReturn);
 
@@ -74,25 +69,5 @@ class PoolAllocator{
 
             m_head = freedNode;
 
-            std::cout << "Returning chunk at: " << ptr << "\n"; 
         }
 };
-
-
-int main(){
-    try{
-        PoolAllocator pool(32, 3);
-
-        void* a = pool.Allocate();
-        void* b = pool.Allocate();
-        pool.deAllocate(a);
-        pool.deAllocate(b);
-        void* c = pool.Allocate();
-        std::cout << "Returned chunk c: " << c << std::endl;
-    }
-    catch (const std::exception& e){
-        std::cerr << "Error: " << e.what() << "\n";
-    }
-
-    return 0;
-}
