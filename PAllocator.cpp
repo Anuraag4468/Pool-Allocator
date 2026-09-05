@@ -50,25 +50,45 @@ class PoolAllocator{
                 std::cout << "Memory pool released.\n";
             }
         }   
-        
-        void printFreeList() const {
-        std::cout << " Free List Trace\n";
 
-        Node* current = m_head;
-        int index = 0;
-        while(current != nullptr){
-            std::cout << "Chunk "<< index++ << " at address: " << current
-            << " - > next points to: " << current->next << std::endl;
-            current = current->next;
+        void* Allocate(){
+            if(m_head == nullptr) throw std::bad_alloc();
+
+            Node* chunkToReturn = m_head;
+
+            m_head = m_head->next;
+
+            std::cout << "Allocated chunk at: " << chunkToReturn << std::endl;
+
+            return static_cast<void*> (chunkToReturn);
+
+
         }
-    }
+
+        void deAllocate(void* ptr){
+            if(!ptr) return;
+
+            Node* freedNode = static_cast<Node* >(ptr);
+
+            freedNode->next = m_head;
+
+            m_head = freedNode;
+
+            std::cout << "Returning chunk at: " << ptr << "\n"; 
+        }
 };
 
 
 int main(){
     try{
-        PoolAllocator pool(32, 8);
-        pool.printFreeList();
+        PoolAllocator pool(32, 3);
+
+        void* a = pool.Allocate();
+        void* b = pool.Allocate();
+        pool.deAllocate(a);
+        pool.deAllocate(b);
+        void* c = pool.Allocate();
+        std::cout << "Returned chunk c: " << c << std::endl;
     }
     catch (const std::exception& e){
         std::cerr << "Error: " << e.what() << "\n";
